@@ -22,6 +22,7 @@ void work_mode()
 {
     current = state::WORK;
     total_seconds = work_minutes * 60;
+    digitalWrite(5, HIGH);
 }
 
 // Break Mode:
@@ -29,6 +30,21 @@ void break_mode()
 {
     current = state::BREAK;
     total_seconds = break_minutes * 60;
+    digitalWrite(5, LOW);
+}
+void setup()
+{
+    // Inputs:
+
+    // Outputs:
+    pinMode(5, OUTPUT);
+
+    Serial.begin(115200);
+    delay(1000);
+ 
+    last_tick = millis();
+    work_mode();    
+
 }
 
 void tick()
@@ -52,15 +68,6 @@ void tick()
             work_mode();
         }
     }
-}
-
-void setup()
-{
-    Serial.begin(115200);
-    delay(1000);
- 
-    last_tick = millis();
-    work_mode();    
 }
 
 void loop() 
