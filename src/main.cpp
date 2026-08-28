@@ -15,9 +15,16 @@ void loop()
         state current = state::BREAK;
 
     // Define work timer:
-    for (int work_seconds = 59; work_seconds > 0; work_seconds--)
-    {
-        delay(1000);
-        Serial.println(work_seconds);
-    }
+        for (int work_minutes = 25, work_seconds = 59; work_minutes || work_seconds > 0; work_seconds--)
+        {
+            delay(1000); //implement millis()
+            Serial.printf("Time: %d:%02d\n", work_minutes, work_seconds);
+        }
+    
+    
+
+
+    
+    
+
 }
