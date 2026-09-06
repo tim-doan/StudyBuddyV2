@@ -1,6 +1,7 @@
 // Tim Doan
 // Study Buddy v2
 // Main Code
+// This file runs the main operations of the project.
 
 // Libraries:
 #include <Arduino.h>
