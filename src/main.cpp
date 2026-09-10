@@ -4,7 +4,9 @@
 // This file runs the main operations of the project.
 
 // Libraries:
+#include "dialogue.h"
 #include <Arduino.h>
+#include <esp_random.h>    
 
 // Variables:
 int work_minutes = 25;
@@ -21,6 +23,7 @@ unsigned long last_tick  = 0;
 // Work Mode:
 void work_mode()
 {
+    say(Event::WORK_START);
     current = state::WORK;
     total_seconds = work_minutes * 60;
     digitalWrite(5, HIGH);
@@ -29,6 +32,7 @@ void work_mode()
 // Break Mode:
 void break_mode()
 {
+    say(Event::BREAK_START);
     current = state::BREAK;
     total_seconds = break_minutes * 60;
     digitalWrite(5, LOW);
@@ -44,6 +48,7 @@ void setup()
     delay(1000);
  
     last_tick = millis();
+    randomSeed(esp_random());
     work_mode();    
 
 }
@@ -61,11 +66,13 @@ void tick()
     {
         if (current == state::WORK)
         {
+            say(Event::WORK_DONE);
             break_mode();
         }
 
         else
-        {
+        {  
+            say(Event::BREAK_DONE);
             work_mode();
         }
     }
