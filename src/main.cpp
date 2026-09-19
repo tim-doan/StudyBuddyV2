@@ -5,8 +5,8 @@
 
 // Libraries:
 #include "dialogue.h"
-#include <Arduino.h>
-#include <esp_random.h>    
+#include "buzzer.h"
+#include <Arduino.h>   
 
 // Variables:
 int work_minutes = 25;
@@ -20,35 +20,48 @@ state current = state::WORK;
 int total_seconds = work_minutes * 60;
 unsigned long last_tick  = 0;
 
+// Announce an event on every output the project has.
+// The display gets added here in Phase 4.1, so it only costs one line.
+void on_event(Event e)
+{
+    say(e);
+    play(e);
+}
+
 // Work Mode:
 void work_mode()
 {
-    say(Event::WORK_START);
+    on_event(Event::WORK_START);
     current = state::WORK;
     total_seconds = work_minutes * 60;
-    digitalWrite(5, HIGH);
 }
 
 // Break Mode:
 void break_mode()
 {
-    say(Event::BREAK_START);
+    on_event(Event::BREAK_START);
     current = state::BREAK;
     total_seconds = break_minutes * 60;
-    digitalWrite(5, LOW);
 }
 void setup()
 {
     // Inputs:
 
     // Outputs:
-    pinMode(5, OUTPUT);
+    buzzer_begin();
 
     Serial.begin(115200);
     delay(1000);
+
+    // Greet the user, then hold here until the opening jingle finishes so that the
+    // work ding does not cut it short. The timer has not started yet, so waiting costs nothing.
+    on_event(Event::SESSION_START);
+    while (buzzer_busy())
+    {
+        buzzer_update();
+    }
  
     last_tick = millis();
-    randomSeed(esp_random());
     work_mode();    
 
 }
@@ -66,13 +79,13 @@ void tick()
     {
         if (current == state::WORK)
         {
-            say(Event::WORK_DONE);
+            on_event(Event::WORK_DONE);
             break_mode();
         }
 
         else
         {  
-            say(Event::BREAK_DONE);
+            on_event(Event::BREAK_DONE);
             work_mode();
         }
     }
@@ -80,6 +93,9 @@ void tick()
 
 void loop() 
 {
+    // Keep whatever jingle is playing moving from note to note
+    buzzer_update();
+
     if (millis() - last_tick >= 1000)
     {
         last_tick += 1000;
@@ -88,4 +104,3 @@ void loop()
 }
 
 
-  

@@ -68,8 +68,13 @@ struct DialogueSet
 
 // Lookup table:
 static const DialogueSet TABLE[(int)Event::COUNT] = 
-{   SET(WORK_START_LINES), 
-    SET(WORK_DONE_LINES), 
+{   
+    SET(SESSION_START_LINES),
+    SET(WORK_START_LINES), 
+    SET(WORK_DONE_LINES),
+    SET(BREAK_START_LINES),
+    SET(BREAK_DONE_LINES),
+    SET(SESSION_DONE_LINES), 
 };
 
 // Choose and say random lines based off each event:
