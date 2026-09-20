@@ -19,5 +19,6 @@ enum class Event
     COUNT
 };
 
-// Function to summon dialogue when an event changes
-void say(Event e);
+// Function to summon dialogue when an event changes.
+// It hands back the line it picked so the display can show the same one the terminal printed.
+const char* say(Event e);

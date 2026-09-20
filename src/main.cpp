@@ -7,6 +7,7 @@
 #include "dialogue.h"
 #include "buzzer.h"
 #include "button.h"
+#include "display.h"
 #include <Arduino.h>   
 
 // Variables:
@@ -22,27 +23,31 @@ int total_seconds = work_minutes * 60;
 unsigned long last_tick  = 0;
 
 // Announce an event on every output the project has.
-// The display gets added here in Phase 4.1, so it only costs one line.
+// The terminal, the buzzer, and the screen all get told at once, and the screen is
+// handed the exact line the terminal printed so the two never disagree.
 void on_event(Event e)
 {
-    say(e);
+    const char* line = say(e);
     play(e);
+    display_event(e, line, total_seconds);
 }
 
 // Work Mode:
 void work_mode()
 {
-    on_event(Event::WORK_START);
+    // The mode and timer are set first so the screen has the new countdown to draw
     current = state::WORK;
     total_seconds = work_minutes * 60;
+    on_event(Event::WORK_START);
 }
 
 // Break Mode:
 void break_mode()
 {
-    on_event(Event::BREAK_START);
+    // The mode and timer are set first so the screen has the new countdown to draw
     current = state::BREAK;
     total_seconds = break_minutes * 60;
+    on_event(Event::BREAK_START);
 }
 
 // Move the project into whichever mode comes next.
@@ -72,6 +77,7 @@ void setup()
 
     // Outputs:
     buzzer_begin();
+    display_begin();
 
     Serial.begin(115200);
     delay(1000);
@@ -97,6 +103,8 @@ void tick()
         current == state::WORK ? "Work: " : "Break:",
         total_seconds / 60,
         total_seconds % 60);
+
+    display_time(total_seconds);
 
     if (total_seconds == 0)
     {

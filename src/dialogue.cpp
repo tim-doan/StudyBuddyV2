@@ -77,10 +77,12 @@ static const DialogueSet TABLE[(int)Event::COUNT] =
     SET(SESSION_DONE_LINES), 
 };
 
-// Choose and say random lines based off each event:
-void say(Event e)
+// Choose and say random lines based off each event, then hand that line back:
+const char* say(Event e)
 {
     const DialogueSet& set = 
     TABLE[(int)e];
-    Serial.println(set.lines[random(set.count)]);
+    const char* line = set.lines[random(set.count)];
+    Serial.println(line);
+    return line;
 }
