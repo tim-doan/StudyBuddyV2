@@ -12,8 +12,9 @@
 static const char* const SESSION_START_LINES[] = 
 {
     "Have you cleared yourself of all distractions?",
-    "Take a deep breath! Be mindful and ready to focus",
-    "Make sure you have all your tasks planned out!",
+    "Take a deep breath. Be mindful and ready to focus.",
+    "Do you have all your tasks planned out?",
+    "Before working, make sure you plan out all your tasks.",
 };
 
 // Starting Work Session:
@@ -21,15 +22,16 @@ static const char* const WORK_START_LINES[] =
 {
     "Let's get to work!",
     "Time to get it done!",
-    "Work time!!!",
+    "Work time!",
+    "Starting the work session..."
+    "Time to work!",
+    "Let's get it done!"
 };
 
 // Ending Work Session:
 static const char* const WORK_DONE_LINES[] = 
 {
-    "Work period done!",
-    "Timer's up!",
-    "Good job!",
+
 };
 
 // Starting Break Session:
@@ -38,14 +40,15 @@ static const char* const BREAK_START_LINES[] =
     "Time to take a break!",
     "Let's take a quick break now.",
     "Break time!!!",
+    "Work period done!",
+    "Timer's up!",
+    "Good job!",
 };
 
 // Ending Break Session:
 static const char* const BREAK_DONE_LINES[] = 
 {
-    "Break is up! Let's get back to work",
-    "Timer's up!",
-    "Feeling refreshed?",
+
 };
 
 // Session End:
