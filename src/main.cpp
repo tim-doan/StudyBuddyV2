@@ -6,6 +6,7 @@
 // Libraries:
 #include "dialogue.h"
 #include "buzzer.h"
+#include "button.h"
 #include <Arduino.h>   
 
 // Variables:
@@ -43,9 +44,31 @@ void break_mode()
     current = state::BREAK;
     total_seconds = break_minutes * 60;
 }
+
+// Move the project into whichever mode comes next.
+// Both the timer running out and the button being pressed come through here,
+// so an early switch behaves exactly like one the timer made on its own.
+void next_mode()
+{
+    if (current == state::WORK)
+    {
+        on_event(Event::WORK_DONE);
+        break_mode();
+    }
+
+    else
+    {  
+        on_event(Event::BREAK_DONE);
+        work_mode();
+    }
+
+    // Start the new mode on a fresh second so its first tick is a whole one
+    last_tick = millis();
+}
 void setup()
 {
     // Inputs:
+    button_begin();
 
     // Outputs:
     buzzer_begin();
@@ -77,17 +100,7 @@ void tick()
 
     if (total_seconds == 0)
     {
-        if (current == state::WORK)
-        {
-            on_event(Event::WORK_DONE);
-            break_mode();
-        }
-
-        else
-        {  
-            on_event(Event::BREAK_DONE);
-            work_mode();
-        }
+        next_mode();
     }
 }
 
@@ -95,6 +108,12 @@ void loop()
 {
     // Keep whatever jingle is playing moving from note to note
     buzzer_update();
+
+    // Let the user jump ahead to the next mode early
+    if (button_pressed())
+    {
+        next_mode();
+    }
 
     if (millis() - last_tick >= 1000)
     {
