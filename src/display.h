@@ -13,8 +13,11 @@
 // Function to wake the display up and paint the first screen
 void display_begin();
 
-// Function to redraw the screen when an event happens
-void display_event(Event e, const char* message, int total_seconds);
+// Function to fill the whole screen with the message an event brings
+void display_message(Event e, const char* message);
+
+// Function to trade the message out for the mode label and the countdown
+void display_timer(int total_seconds);
 
 // Function to redraw only the countdown
 void display_time(int total_seconds);

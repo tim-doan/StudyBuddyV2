@@ -22,6 +22,10 @@ state current = state::WORK;
 int total_seconds = work_minutes * 60;
 unsigned long last_tick  = 0;
 
+// Opening Message Logic:
+const unsigned long MESSAGE_MS = 3000;   // how long a mode's message holds the screen
+unsigned long message_until = 0;         // when to trade it for the timer, or 0 if none is up
+
 // Announce an event on every output the project has.
 // The terminal, the buzzer, and the screen all get told at once, and the screen is
 // handed the exact line the terminal printed so the two never disagree.
@@ -29,7 +33,7 @@ void on_event(Event e)
 {
     const char* line = say(e);
     play(e);
-    display_event(e, line, total_seconds);
+    display_message(e, line);
 }
 
 // Work Mode:
@@ -39,6 +43,9 @@ void work_mode()
     current = state::WORK;
     total_seconds = work_minutes * 60;
     on_event(Event::WORK_START);
+
+    // The countdown waits while the opening message has the screen to itself
+    message_until = millis() + MESSAGE_MS;
 }
 
 // Break Mode:
@@ -48,6 +55,9 @@ void break_mode()
     current = state::BREAK;
     total_seconds = break_minutes * 60;
     on_event(Event::BREAK_START);
+
+    // The countdown waits while the opening message has the screen to itself
+    message_until = millis() + MESSAGE_MS;
 }
 
 // Move the project into whichever mode comes next.
@@ -67,8 +77,6 @@ void next_mode()
         work_mode();
     }
 
-    // Start the new mode on a fresh second so its first tick is a whole one
-    last_tick = millis();
 }
 void setup()
 {
@@ -82,10 +90,11 @@ void setup()
     Serial.begin(115200);
     delay(1000);
 
-    // Greet the user, then hold here until the opening jingle finishes so that the
-    // work ding does not cut it short. The timer has not started yet, so waiting costs nothing.
+    // Greet the user and hold the screen long enough to read it. The jingle keeps
+    // moving while it sits there, and the timer has not started yet, so waiting is free.
     on_event(Event::SESSION_START);
-    while (buzzer_busy())
+    unsigned long greeting_until = millis() + MESSAGE_MS;
+    while (millis() < greeting_until)
     {
         buzzer_update();
     }
@@ -121,6 +130,21 @@ void loop()
     if (button_pressed())
     {
         next_mode();
+        return;
+    }
+
+    // The opening message holds both the screen and the countdown until its time is up,
+    // then the timer takes over and the first whole second starts from there
+    if (message_until != 0)
+    {
+        if (millis() >= message_until)
+        {
+            message_until = 0;
+            display_timer(total_seconds);
+            last_tick = millis();
+        }
+
+        return;
     }
 
     if (millis() - last_tick >= 1000)
