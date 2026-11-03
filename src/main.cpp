@@ -26,6 +26,10 @@ unsigned long last_tick  = 0;
 const unsigned long MESSAGE_MS = 3000;   // how long a mode's message holds the screen
 unsigned long message_until = 0;         // when to trade it for the timer, or 0 if none is up
 
+// Pause Logic:
+bool paused = false;
+unsigned long paused_at = 0;             // the moment the pause button froze the countdown
+
 // Announce an event on every output the project has.
 // The terminal, the buzzer, and the screen all get told at once, and the screen is
 // handed the exact line the terminal printed so the two never disagree.
@@ -90,11 +94,10 @@ void setup()
     Serial.begin(115200);
     delay(1000);
 
-    // Greet the user and hold the screen long enough to read it. The jingle keeps
+    // Greet the user and hold the screen until they press start. The jingle keeps
     // moving while it sits there, and the timer has not started yet, so waiting is free.
     on_event(Event::SESSION_START);
-    unsigned long greeting_until = millis() + MESSAGE_MS;
-    while (millis() < greeting_until)
+    while (!start_pressed())
     {
         buzzer_update();
     }
@@ -126,10 +129,46 @@ void loop()
     // Keep whatever jingle is playing moving from note to note
     buzzer_update();
 
-    // Let the user jump ahead to the next mode early
-    if (button_pressed())
+    // Check every button on every pass so none of them misses its settling clock
+    bool skip  = skip_pressed();
+    bool start = start_pressed();
+    bool pause = pause_pressed();
+
+    // Freeze the countdown where it stands
+    if (pause && !paused)
     {
+        paused = true;
+        paused_at = millis();
+        Serial.println("Paused");
+    }
+
+    // Pick back up from the exact point the countdown stopped. Everything waiting on the
+    // clock is pushed back by the time spent paused, so no part of a second is lost.
+
+    if (start && paused)
+    {
+        unsigned long paused_for = millis() - paused_at;
+        last_tick += paused_for;
+        if (message_until != 0)
+        {
+            message_until += paused_for;
+        }
+
+        paused = false;
+        Serial.println("Resumed");
+    }
+
+    // Let the user jump ahead to the next mode early.
+    // A skip starts the next mode running even if the countdown was paused.
+    if (skip)
+    {
+        paused = false;
         next_mode();
+        return;
+    }
+
+    if (paused)
+    {
         return;
     }
 
