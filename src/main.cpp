@@ -94,12 +94,13 @@ void setup()
     Serial.begin(115200);
     delay(1000);
 
-    // Greet the user and hold the screen until they press start. The jingle keeps
-    // moving while it sits there, and the timer has not started yet, so waiting is free.
+    // Greet the user and hold the screen until they press start. The jingle and the
+    // buddy keep moving while it sits there, and the timer has not started yet, so waiting is free.
     on_event(Event::SESSION_START);
     while (!start_pressed())
     {
         buzzer_update();
+        display_update();
     }
  
     last_tick = millis();
@@ -126,36 +127,45 @@ void tick()
 
 void loop() 
 {
-    // Keep whatever jingle is playing moving from note to note
+    // Keep whatever jingle is playing moving from note to note, and the buddy from frame to frame
     buzzer_update();
+    display_update();
 
     // Check every button on every pass so none of them misses its settling clock
     bool skip  = skip_pressed();
     bool start = start_pressed();
     bool pause = pause_pressed();
 
-    // Freeze the countdown where it stands
+    // Freeze the countdown where it stands and let the buddy doze until it starts again
     if (pause && !paused)
     {
         paused = true;
         paused_at = millis();
         Serial.println("Paused");
+        display_paused(total_seconds);
     }
-
-    // Pick back up from the exact point the countdown stopped. Everything waiting on the
-    // clock is pushed back by the time spent paused, so no part of a second is lost.
 
     if (start && paused)
     {
-        unsigned long paused_for = millis() - paused_at;
-        last_tick += paused_for;
-        if (message_until != 0)
-        {
-            message_until += paused_for;
-        }
-
         paused = false;
         Serial.println("Resumed");
+
+        // A pause that cut a mode's opening message short skips the rest of it,
+        // so the countdown starts right away instead of making the user wait again
+        if (message_until != 0)
+        {
+            message_until = 0;
+            last_tick = millis();
+        }
+
+        // Otherwise pick back up from the exact point the countdown stopped. The clock is
+        // pushed back by the time spent paused, so no part of a second is lost.
+        else
+        {
+            last_tick += millis() - paused_at;
+        }
+
+        display_timer(total_seconds);
     }
 
     // Let the user jump ahead to the next mode early.

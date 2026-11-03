@@ -13,10 +13,16 @@
 // Function to wake the display up and paint the first screen
 void display_begin();
 
-// Function to fill the whole screen with the message an event brings
+// Function to hand the screen to the buddy, who acts out an event and says its line
 void display_message(Event e, const char* message);
 
-// Function to trade the message out for the mode label and the countdown
+// Function to put the buddy to sleep on screen while the countdown is paused
+void display_paused(int total_seconds);
+
+// Function that keeps the buddy moving, one frame at a time, while it has the screen
+void display_update();
+
+// Function to trade the buddy out for the mode label and the countdown
 void display_timer(int total_seconds);
 
 // Function to redraw only the countdown
