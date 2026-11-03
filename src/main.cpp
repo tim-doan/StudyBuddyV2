@@ -142,6 +142,7 @@ void loop()
         paused = true;
         paused_at = millis();
         Serial.println("Paused");
+        play_pause();
         display_paused(total_seconds);
     }
 
@@ -149,6 +150,7 @@ void loop()
     {
         paused = false;
         Serial.println("Resumed");
+        play_resume();
 
         // A pause that cut a mode's opening message short skips the rest of it,
         // so the countdown starts right away instead of making the user wait again

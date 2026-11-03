@@ -16,6 +16,12 @@ void buzzer_begin();
 // Function to summon a jingle when an event happens
 void play(Event e);
 
+// Function to sound the jingle for pausing the countdown
+void play_pause();
+
+// Function to sound the jingle for starting the countdown back up
+void play_resume();
+
 // Function that walks a jingle from one note to the next
 void buzzer_update();
 

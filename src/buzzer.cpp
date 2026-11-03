@@ -56,6 +56,20 @@ static const Note SESSION_DONE_NOTES[] =
     {1319, 420},
 };
 
+// Pausing: two notes stepping down, like the buddy settling in for a nap
+static const Note PAUSE_NOTES[] =
+{
+    {784, 110},
+    {523, 200},
+};
+
+// Resuming: the same two notes stepping back up, like the buddy waking up
+static const Note RESUME_NOTES[] =
+{
+    {523, 110},
+    {784, 200},
+};
+
 // Bundle all the notes of a jingle into one value:
 struct Melody
 {
@@ -80,6 +94,10 @@ static const Melody TABLE[(int)Event::COUNT] =
     SET(SESSION_DONE_NOTES),    // SESSION_DONE
 };
 
+// Pausing isn't one of the events, since it has no dialogue, so its jingles sit apart from the table:
+static const Melody PAUSE = SET(PAUSE_NOTES);
+static const Melody RESUME = SET(RESUME_NOTES);
+
 // Jingle Logic:
 static const Note* melody = nullptr;    // the jingle playing now, or nullptr when the buzzer is quiet
 static uint8_t note_count = 0;          // how many notes that jingle holds
@@ -98,12 +116,10 @@ void buzzer_begin()
     ledcAttach(BUZZER_PIN, BUZZER_START_FREQ, BUZZER_RESOLUTION);
 }
 
-// Look up the jingle that belongs to an event and sound its first note:
-void play(Event e)
+// Start a jingle from its first note, cutting off whatever was playing before:
+static void start_melody(const Melody& set)
 {
-    const Melody& set = TABLE[(int)e];
-
-    // A silent event has no notes, so there is nothing to start
+    // A silent jingle has no notes, so there is nothing to start
     if (set.count == 0)
     {
         return;
@@ -114,6 +130,24 @@ void play(Event e)
     note_index = 0;
     note_started = millis();
     start_note();
+}
+
+// Look up the jingle that belongs to an event and sound its first note:
+void play(Event e)
+{
+    start_melody(TABLE[(int)e]);
+}
+
+// Sound the jingle for pausing the countdown:
+void play_pause()
+{
+    start_melody(PAUSE);
+}
+
+// Sound the jingle for starting the countdown back up:
+void play_resume()
+{
+    start_melody(RESUME);
 }
 
 // Move a jingle onto its next note once the current note has run its full length.
